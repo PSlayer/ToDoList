@@ -1,0 +1,68 @@
+﻿@{
+    ViewData["Title"] = "ToDoList";
+}
+
+<div class="text-center mb-3">
+	<h1 class="display-4">ToDoList</h1>
+</div>
+
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="row">
+				<div class="col-md-6">
+					<h3>
+						Создание задачи
+					</h3>
+					<form id="createTaskForm">
+						<div class="form-group mb-3"> 
+							<label for="nametask">
+								Название задачи
+							</label>
+							<input class="form-control" name="name" />
+						</div>
+						<button id="createtask" type="submit" class="btn btn-primary">
+							Создать
+						</button>
+					</form>
+				</div>
+				<div class="col-md-6">
+					<h3>Таблица</h3>
+					<table class="table">
+						<thead>
+						<tr>
+							<th>
+								#
+							</th>
+							<th>
+								Название
+							</th>
+							<th>
+								Статус
+							</th>
+							<th>
+								Действия
+							</th>
+						</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts
+{
+	<script>
+		$('#createtask').on('click', function (){
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("Create","Task")',
+				data: $('#createTaskForm').serialize()
+			})
+		});
+	</script>
+}
