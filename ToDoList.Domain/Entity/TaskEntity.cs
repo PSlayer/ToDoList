@@ -1,4 +1,6 @@
-﻿namespace ToDoList.Domain.Entity;
+﻿using ToDoList.Domain.Enum;
+
+namespace ToDoList.Domain.Entity;
 
 public class TaskEntity
 {
@@ -6,5 +8,8 @@ public class TaskEntity
     
     public string Name { get; set; }
     
-    public bool doneTask { get; set; }
+    public bool DoneTask { get; set; }
+    
+    public DateTime Created { get; set; }
+    
 }

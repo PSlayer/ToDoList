@@ -16,12 +16,12 @@
 					</h3>
 					<form id="createTaskForm">
 						<div class="form-group mb-3"> 
-							<label for="nametask">
+							<label>
 								Название задачи
 							</label>
 							<input class="form-control" name="name" />
 						</div>
-						<button id="createtask" type="submit" class="btn btn-primary">
+						<button id="createTask" type="submit" class="btn btn-primary">
 							Создать
 						</button>
 					</form>
@@ -56,13 +56,31 @@
 
 @section Scripts
 {
-	<script>
-		$('#createtask').on('click', function (){
-			$.ajax({
-				type: 'POST',
-				url: '@Url.Action("Create","Task")',
-				data: $('#createTaskForm').serialize()
-			})
-		});
-	</script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            $('#createTask').on('click', function (e){
+                e.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Create", "Task")',
+                    data: $('#createTaskForm').serialize(),
+                    success: function (response) {
+                        Swal.fire({
+                            title: 'Информация',
+                            text: response.description,
+                            icon: 'success',
+                            confirmButtonText: 'Окей'
+                        })
+                    },
+                    error: function (response) {
+                         Swal.fire({
+                            title: 'Информация',
+                            text: response.responseJSON.description,
+                            icon: 'error',
+                            confirmButtonText: 'Окей'
+                         })
+                    }
+                })
+            });
+        </script>
 }
