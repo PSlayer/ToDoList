@@ -25,6 +25,7 @@ public class TaskService : ITaskService
     {
         try
         {
+            model.Validate();
             _logger.LogInformation($"Запрос на создание задачи - {model.Name}");
 
             var task = await _taskRepository.GetAll()
@@ -60,7 +61,7 @@ public class TaskService : ITaskService
             return new BaseResponse<TaskEntity>()
             {
                 StatusCode = StatusCode.IternalServerError,
-                Description = "Ошибка связи с сервером"
+                Description = $"{ex.Message}"
             };
         }
 
