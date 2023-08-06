@@ -28,18 +28,18 @@
 				</div>
 				<div class="col-md-6">
 					<h3>Таблица</h3>
-					<table class="table">
+					<table class="table table-hover" id="taskTableId">
 						<thead>
 						<tr>
 							<th>
-								#
+								Готовность
 							</th>
 							<th>
 								Название
 							</th>
 							<th>
-								Статус
-							</th>
+								Дата
+                            </th>
 							<th>
 								Действия
 							</th>
@@ -56,8 +56,149 @@
 
 @section Scripts
 {
-		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script>
+
+	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script>
+	
+			const swalWithBootstrapButtons = Swal.mixin({
+              customClass: {
+                confirmButton: 'btn btn-success'
+              },
+              buttonsStyling: false
+            })
+            const swalWithBootstrapButtons1 = Swal.mixin({
+              customClass: {
+                confirmButton: 'btn btn-success',
+                cancelButton: 'btn btn-danger'
+              },
+              buttonsStyling: false
+            })
+            
+        	let dataTable = $('#taskTableId').DataTable({
+        		info: false,
+        		serverSide: true,
+        		searching: false,
+        		paging:false,
+        		sorting:false,
+        		ajax: {
+					url: "@Url.Action("TaskHandler")",
+					method: 'POST',
+					data: null
+        		},
+        		columns: [
+						{ 	
+							data: 'doneTask',
+							sortable:false,
+							render: function (data, type){
+								if (data == "Готова"){
+								return '<input class="form-check-input" type="checkbox" value="true" id="doneThisIsTask" checked>'}
+								if (data == "Не готова"){
+								return '<input class="form-check-input" type="checkbox" value="true" id="doneThisIsTask" >'}
+							}						
+						},
+						{ data: 'name' },
+						{ data: 'created'},
+						{
+							data: null,
+							sortable:false,
+							render: function (data, type){
+								return '<button id="doneThisTask" class="btn btn-success btn-sm center-block">Выполнить</button>'
+							}
+						}
+        		],
+        		createdRow: function (nRow, data) {
+						var handlerDelete = function (){														
+							swalWithBootstrapButtons1.fire({
+							  title: 'Удалить запись?',
+							  text: "Запись невозможно будет вернуть!",
+							  icon: 'warning',
+							  showCancelButton: true,
+							  confirmButtonText: 'Да, удалить!',
+							  cancelButtonText: 'Отменить!',
+							  reverseButtons: true
+							}).then((result) => {
+							  if (result.isConfirmed) {
+								$.ajax({
+										type:'POST',
+										url: '@Url.Action("DeleteTask")',
+										data: {id: data.id},
+										success: function (response) {
+											Swal.fire({
+												title: 'Информация',
+												text: response.description,
+												icon: 'success',
+												confirmButtonText: 'Окей'
+											})
+											dataTable.draw();
+										},
+										error: function (response) {
+											 Swal.fire({
+												title: 'Информация',
+												text: response.responseJSON.description,
+												icon: 'error',
+												confirmButtonText: 'Окей'
+											 })
+										}
+									})
+							  } else if (
+								/* Read more about handling dismissals below */
+								result.dismiss === Swal.DismissReason.cancel
+							  ) {
+								swalWithBootstrapButtons.fire(
+								  'Отменено',
+								  'Всё будет хорошо :)',
+								  'error'
+								)
+							  }
+							})
+						}
+						var handlerComplete = function (){
+														
+							swalWithBootstrapButtons.fire({
+							  title: 'Вы уверены?',
+							  icon: 'warning',
+							  confirmButtonText: 'Да',
+							  reverseButtons: true
+							}).then((result) => {
+							  if (result.isConfirmed) {
+								$.ajax({
+									type:'POST',
+									url: '@Url.Action("EndTask")',
+									data: {id: data.id},
+									success: function (response) {
+										Swal.fire({
+											title: 'Информация',
+											text: response.description,
+											icon: 'success',
+											confirmButtonText: 'Окей'
+										})
+										dataTable.draw();
+									},
+									error: function (response) {
+										 Swal.fire({
+											title: 'Информация',
+											text: response.responseJSON.description,
+											icon: 'error',
+											confirmButtonText: 'Окей'
+										 })
+									}
+								})
+							  } 
+							})
+						}
+						
+						$('td input', nRow).on('click', handlerComplete);	
+						for (var i = 1; i < dataTable.columns().header().length - 1; i++){
+							$('td', nRow).eq(i).css('cursor','pointer');
+							$('td', nRow).eq(i).on('click', null);							
+						}						
+						$('td button', nRow).on('click', handlerDelete);		
+					}
+        	});
+        
+        
+        
             $('#createTask').on('click', function (e){
                 e.preventDefault();
                 $.ajax({
@@ -71,6 +212,8 @@
                             icon: 'success',
                             confirmButtonText: 'Окей'
                         })
+                        
+						dataTable.draw();
                     },
                     error: function (response) {
                          Swal.fire({

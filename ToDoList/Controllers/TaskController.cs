@@ -32,4 +32,37 @@ public class TaskController : Controller
         }
         
     }
+    [HttpPost]
+    public async Task<IActionResult> EndTask(long id)
+    {
+        var response = await _taskService.EndTask(id);
+        if (response.StatusCode == Domain.Enum.StatusCode.OK)
+        {
+            return Ok(new { description = response.Description });
+        }
+        else
+        {
+            return BadRequest(new { description = response.Description });
+        } 
+    }
+    [HttpPost]
+    public async Task<IActionResult> DeleteTask(long id)
+    {
+        var response = await _taskService.DeleteTask(id);
+        if (response.StatusCode == Domain.Enum.StatusCode.OK)
+        {
+            return Ok(new { description = response.Description });
+        }
+        else
+        {
+            return BadRequest(new { description = response.Description });
+        } 
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> TaskHandler()
+    {
+        var response = await _taskService.GetTasks();
+        return Json(new {data = response.Data});
+    }
 }

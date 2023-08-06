@@ -66,4 +66,98 @@ public class TaskService : ITaskService
         }
 
     }
+
+    public async Task<IBaseResponse<bool>> EndTask(long id)
+    {
+        try
+        {
+            var task = await _taskRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            if (task == null)
+            {
+                return new BaseResponse<bool>()
+                {
+                    StatusCode = StatusCode.TaskNotFound,
+                    Description = "Задача не найдена"
+                };
+
+            }
+
+            task.DoneTask = true;
+            await _taskRepository.Update(task);
+            return new BaseResponse<bool>()
+            {
+                StatusCode = StatusCode.OK,
+                Description = "Задача завершена"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[TaskService.EndTask]: {ex.Message}");
+            return new BaseResponse<bool>()
+            {
+                StatusCode = StatusCode.IternalServerError,
+                Description = $"{ex.Message}"
+            };
+        }
+    }
+    public async Task<IBaseResponse<bool>> DeleteTask(long id)
+    {
+        try
+        {
+            var task = await _taskRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            if (task == null)
+            {
+                return new BaseResponse<bool>()
+                {
+                    StatusCode = StatusCode.TaskNotFound,
+                    Description = "Задача не найдена"
+                };
+
+            }
+            await _taskRepository.Delete(task);
+            return new BaseResponse<bool>()
+            {
+                StatusCode = StatusCode.OK,
+                Description = "Задача удалена"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[TaskService.EndTask]: {ex.Message}");
+            return new BaseResponse<bool>()
+            {
+                StatusCode = StatusCode.IternalServerError,
+                Description = $"{ex.Message}"
+            };
+        }
+    }
+    public async Task<IBaseResponse<IEnumerable<TaskViewModel>>> GetTasks()
+    {
+        try
+        {
+            var tasks = await _taskRepository.GetAll()
+                .Select(x => new TaskViewModel()
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    DoneTask = x.DoneTask == true ? "Готова" : "Не готова",
+                    Created = x.Created.ToLongDateString()
+                })
+                .ToListAsync();
+            return new BaseResponse<IEnumerable<TaskViewModel>>()
+            {
+                Data = tasks,
+                StatusCode = StatusCode.OK
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"[TaskService.GetTask]: {ex.Message}");
+            return new BaseResponse<IEnumerable<TaskViewModel>>()
+            {
+                StatusCode = StatusCode.IternalServerError,
+                Description = $"{ex.Message}"
+            };
+        }
+    }
 }
